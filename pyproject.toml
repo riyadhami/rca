@@ -1,0 +1,18 @@
+[project]
+name = "ai-rca-poc"
+version = "0.1.0"
+description = "AI-powered complaint RCA system"
+readme = "README.md"
+requires-python = ">=3.12"
+dependencies = [
+    "fastapi==0.115.12",
+    "uvicorn[standard]==0.34.0",
+    "python-multipart==0.0.20",
+    "pandas==2.2.3",
+    "openpyxl==3.1.5",
+    "xlrd==2.0.1",
+    "python-dotenv==1.1.0",
+    "anthropic[vertex]>=0.40.0",
+    "streamlit==1.45.0",
+    "requests==2.32.3",
+]
