@@ -26,8 +26,3 @@ uv run uvicorn backend.main:app --reload
 uv run streamlit run frontend/app.py
 ```
 
-## API docs
-
-FastAPI auto-generates interactive docs at **http://localhost:8000/docs**
-
----

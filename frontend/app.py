@@ -1,7 +1,6 @@
 import io
 import os
 import time
-
 import pandas as pd
 import requests
 import streamlit as st
@@ -30,7 +29,7 @@ st.markdown("""
 .rca-kpi-card{background:#1e2028;border:1px solid #31333f;border-radius:10px;padding:18px 20px;position:relative;overflow:hidden}
 .rca-kpi-card::before{content:'';position:absolute;top:0;left:0;right:0;height:3px}
 .rca-kpi-blue::before{background:#2563eb}
-.rca-kpi-red::before{background:#ef4444}
+.rca-kpi-purple::before{background:#8b5cf6}
 .rca-kpi-amber::before{background:#f59e0b}
 .rca-kpi-green::before{background:#10b981}
 .rca-kpi-label{font-size:11.5px;font-weight:600;color:#8b9197;text-transform:uppercase;letter-spacing:.5px;margin-bottom:8px}
@@ -52,29 +51,7 @@ st.markdown("""
 .rca-cat-bar{height:100%;border-radius:4px}
 .rca-cat-count{font-size:12px;font-weight:600;color:#8b9197;width:32px;text-align:right}
 
-
 /* Category Analysis Cards */
-.rca-cat-card{background:#1e2028;border:1px solid #31333f;border-radius:10px;overflow:hidden;height:100%}
-.rca-cat-color-strip{height:4px}
-.rca-cat-header{padding:14px 18px;display:flex;align-items:center;justify-content:space-between;border-bottom:1px solid #31333f;gap:8px}
-.rca-cat-title{font-size:14px;font-weight:700;color:#fafafa}
-.rca-cat-badges{display:flex;gap:6px;align-items:center;flex-shrink:0}
-.rca-cat-body{padding:16px 18px}
-.rca-block{margin-bottom:14px}
-.rca-label{font-size:10.5px;font-weight:700;letter-spacing:1px;text-transform:uppercase;color:#8b9197;margin-bottom:5px}
-.rca-root-cause{font-size:13px;font-weight:600;color:#e2e8f0;line-height:1.5;padding:8px 12px;background:#12141a;border-left:3px solid #2563eb;border-radius:0 4px 4px 0;margin:0}
-.rca-issues{list-style:none;padding:0;margin:0;display:flex;flex-direction:column;gap:5px}
-.rca-issues li{font-size:12.5px;color:#cbd5e1;display:flex;align-items:flex-start;gap:7px;line-height:1.5}
-.rca-issues li::before{content:"·";color:#60a5fa;font-weight:700;font-size:18px;line-height:1.2;flex-shrink:0}
-.rca-solution{font-size:12.5px;color:#86efac;background:#0d2318;border:1px solid #166534;border-radius:6px;padding:10px 12px;line-height:1.9;margin:0}
-.rca-solution ol{margin:0;padding-left:18px}
-.rca-solution li{margin-bottom:4px}
-
-/* Badges */
-.rca-badge{display:inline-block;font-size:11px;font-weight:600;padding:3px 9px;border-radius:20px;text-transform:uppercase;letter-spacing:.3px}
-.rca-badge-critical{background:#450a0a;color:#fca5a5}
-.rca-badge-noncritical{background:#052e16;color:#86efac}
-.rca-count-badge{font-size:12px;font-weight:600;padding:3px 10px;border-radius:20px;background:#31333f;color:#8b9197}
 .rca-section-title{font-size:13px;font-weight:700;color:#8b9197;text-transform:uppercase;letter-spacing:1px;margin:0 0 14px 0}
 
 /* Subcategory pills */
@@ -83,13 +60,65 @@ st.markdown("""
           transition:box-shadow .18s ease,border-color .18s ease}
 .sub-pill:hover{box-shadow:0 0 0 2.5px var(--pill-glow)}
 
-/* Hide Streamlit toolbar so it never overlaps content */
+/* Hide Streamlit toolbar */
 header[data-testid="stHeader"]{display:none!important}
 #MainMenu{display:none!important}
 footer{display:none!important}
 
 /* Tighten Streamlit page padding */
 .block-container{padding-top:1.5rem!important;padding-left:1.8rem!important;padding-right:1.8rem!important}
+
+/* ── Category card "expand" button: seamless card footer ── */
+.ov-btn-wrap{margin-top:-2px}
+.ov-btn-wrap>div>button{
+    background:transparent!important;
+    border:1px solid #252836!important;
+    border-top:none!important;
+    border-radius:0 0 8px 8px!important;
+    color:#475569!important;
+    font-size:11px!important;
+    font-weight:500!important;
+    letter-spacing:.3px;
+    padding:6px 10px!important;
+    transition:color .15s,background .15s,border-color .15s!important
+}
+.ov-btn-wrap>div>button:hover{
+    background:#1e2230!important;
+    border-color:#3a3f58!important;
+    color:#94a3b8!important
+}
+
+/* ── Overlay dialog pop-in animation ── */
+@keyframes ov-pop-in{
+    from{opacity:0;transform:scale(.96) translateY(12px)}
+    to  {opacity:1;transform:scale(1)   translateY(0)}
+}
+[data-testid="stModal"]>div>div{
+    animation:ov-pop-in .28s cubic-bezier(.16,1,.3,1) both!important
+}
+
+/* Dialog body: match dark card theme */
+[data-testid="stModal"] section{
+    background:#161821!important;
+    border:1px solid #252836!important
+}
+
+/* ── Nav arrows inside overlay ── */
+.ov-nav-btn>div>button{
+    background:#1e2028!important;
+    border:1px solid #31333f!important;
+    border-radius:8px!important;
+    color:#94a3b8!important;
+    font-size:18px!important;
+    line-height:1!important;
+    padding:6px 18px!important;
+    transition:background .15s,border-color .15s,color .15s!important
+}
+.ov-nav-btn>div>button:hover{
+    background:#252836!important;
+    border-color:#4a5070!important;
+    color:#f1f5f9!important
+}
 </style>
 """, unsafe_allow_html=True)
 
@@ -113,14 +142,183 @@ def _rgba(hex_color: str, alpha: float) -> str:
     return f"rgba({r},{g},{b},{alpha})"
 
 
+# ── Category overlay dialog ───────────────────────────────────────────────────
+@st.dialog("Category Deep Dive", width="large")
+def _show_category_overlay() -> None:
+    data          = st.session_state.get("_overlay_data", {})
+    rca_sorted    = data.get("rca_sorted", [])
+    cat_counts    = data.get("cat_counts", {})
+    color_map     = data.get("color_map", {})
+    complaints_df = data.get("complaints_df", pd.DataFrame())
+
+    if not rca_sorted:
+        st.warning("No category data available.")
+        return
+
+    total = len(rca_sorted)
+    idx   = st.session_state.get("overlay_cat_idx", 0) % total
+    entry = rca_sorted[idx]
+
+    category = entry.get("category", "Unknown")
+    count    = cat_counts.get(category, 0)
+    color    = color_map.get(category, "#94a3b8")
+
+    # ── Navigation row ────────────────────────────────────────────────────────
+    nav_l, nav_mid, nav_r = st.columns([1, 6, 1])
+    with nav_l:
+        st.markdown('<div class="ov-nav-btn">', unsafe_allow_html=True)
+        if st.button("◀", key="ov_prev", use_container_width=True, help="Previous category"):
+            st.session_state.overlay_cat_idx = (idx - 1) % total
+            st.session_state.overlay_trigger = True
+            st.rerun()
+        st.markdown('</div>', unsafe_allow_html=True)
+    with nav_mid:
+        st.markdown(
+            f'<div style="text-align:center;font-size:11.5px;color:#64748b;padding-top:8px">'
+            f'Category <strong style="color:#94a3b8">{idx + 1}</strong> of {total}</div>',
+            unsafe_allow_html=True,
+        )
+    with nav_r:
+        st.markdown('<div class="ov-nav-btn">', unsafe_allow_html=True)
+        if st.button("▶", key="ov_next", use_container_width=True, help="Next category"):
+            st.session_state.overlay_cat_idx = (idx + 1) % total
+            st.session_state.overlay_trigger = True
+            st.rerun()
+        st.markdown('</div>', unsafe_allow_html=True)
+
+    st.markdown('<div style="height:4px"></div>', unsafe_allow_html=True)
+
+    # ── Category header with color accent ────────────────────────────────────
+    st.markdown(
+        f'<div style="background:{_rgba(color,.08)};border-left:4px solid {color};'
+        f'border-radius:0 10px 10px 0;padding:12px 18px;margin-bottom:14px">'
+        f'<div style="font-size:21px;font-weight:700;color:#f1f5f9;margin-bottom:3px">{category}</div>'
+        f'<div style="font-size:13px;color:#94a3b8">{count} complaint{"s" if count != 1 else ""} in this category</div>'
+        f'</div>',
+        unsafe_allow_html=True,
+    )
+
+    # ── All subcategory pills ─────────────────────────────────────────────────
+    sub_counts: dict[str, int] = {}
+    if (
+        not complaints_df.empty
+        and "Taxonomy Category" in complaints_df.columns
+        and "Taxonomy Subcategory" in complaints_df.columns
+    ):
+        sub_counts = (
+            complaints_df[complaints_df["Taxonomy Category"] == category]
+            ["Taxonomy Subcategory"]
+            .value_counts()
+            .to_dict()
+        )
+
+    if sub_counts:
+        pills = "".join(
+            f'<span class="sub-pill" style="color:{color};background:{_rgba(color,.10)};'
+            f'border-color:{_rgba(color,.30)};--pill-glow:{_rgba(color,.45)}">'
+            f'{s}&nbsp;<span style="opacity:.55;font-size:9px">({c})</span></span>'
+            for s, c in sub_counts.items() if s
+        )
+        st.markdown(
+            f'<div style="margin-bottom:14px">'
+            f'<div style="font-size:10px;font-weight:700;letter-spacing:.9px;text-transform:uppercase;'
+            f'color:#64748b;margin-bottom:6px">All Subcategories</div>'
+            f'<div style="line-height:2">{pills}</div></div>',
+            unsafe_allow_html=True,
+        )
+
+    LBL = "font-size:10px;font-weight:700;letter-spacing:.9px;text-transform:uppercase;color:#64748b;margin-bottom:4px"
+
+    # ── Root cause ────────────────────────────────────────────────────────────
+    st.markdown(
+        f'<div style="margin-bottom:10px">'
+        f'<div style="{LBL}">Root Cause</div>'
+        f'<div style="background:#12141a;border-left:2px solid {color};border-radius:0 4px 4px 0;'
+        f'padding:9px 13px;font-size:13.5px;color:#e2e8f0;line-height:1.6">'
+        f'{entry.get("root_cause", "—")}</div></div>',
+        unsafe_allow_html=True,
+    )
+
+    # ── Deeper root cause ─────────────────────────────────────────────────────
+    if entry.get("deeper_root_cause"):
+        st.markdown(
+            f'<div style="margin-bottom:10px">'
+            f'<div style="{LBL}">Deeper Root Cause</div>'
+            f'<div style="background:#12141a;border-left:2px solid #8b5cf6;border-radius:0 4px 4px 0;'
+            f'padding:9px 13px;font-size:13.5px;color:#e2e8f0;line-height:1.6">'
+            f'{entry.get("deeper_root_cause", "")}</div></div>',
+            unsafe_allow_html=True,
+        )
+
+    # ── Issue breakdown + recommended actions ─────────────────────────────────
+    c1, c2 = st.columns(2)
+    with c1:
+        iss_html = "".join(
+            f'<div style="font-size:12.5px;color:#cbd5e1;padding:2px 0;line-height:1.5">'
+            f'<span style="color:{color};margin-right:6px;font-size:16px;vertical-align:middle">·</span>'
+            f'{iss}</div>'
+            for iss in entry.get("issue_breakdown", [])
+        ) or '<div style="font-size:12.5px;color:#475569">—</div>'
+        st.markdown(
+            f'<div style="{LBL}">Issue Breakdown</div><div>{iss_html}</div>',
+            unsafe_allow_html=True,
+        )
+    with c2:
+        act_html = "".join(
+            f'<div style="font-size:12.5px;color:#7dd3a8;padding:2px 0;line-height:1.5">'
+            f'<span style="color:#4a9e72;margin-right:5px;font-weight:600">{k}.</span>{a}</div>'
+            for k, a in enumerate(entry.get("next_actions", []), 1)
+        ) or '<div style="font-size:12.5px;color:#475569">—</div>'
+        st.markdown(
+            f'<div style="{LBL}">Recommended Actions</div>'
+            f'<div style="background:linear-gradient(135deg,#0c1f14,#091510);'
+            f'border:1px solid #1c3d28;border-radius:5px;padding:9px 12px">{act_html}</div>',
+            unsafe_allow_html=True,
+        )
+
+    st.divider()
+
+    # ── Scrollable reports for this category ──────────────────────────────────
+    st.markdown(
+        f'<div style="{LBL};margin-bottom:8px">All Reports in this Category'
+        f'&nbsp;&nbsp;<span style="font-weight:400;color:#64748b;text-transform:none;'
+        f'letter-spacing:0;font-size:12px">({count} total)</span></div>',
+        unsafe_allow_html=True,
+    )
+
+    if not complaints_df.empty and "Taxonomy Category" in complaints_df.columns:
+        cat_df   = complaints_df[complaints_df["Taxonomy Category"] == category].copy()
+        log_cols = [c for c in [
+            "Translation (EN)", "Taxonomy Subcategory", "Taxonomy Issue",
+            "Sentiment", "Score", "Complaint Summary", "Recommended Action",
+        ] if c in cat_df.columns]
+
+        if log_cols:
+            st.dataframe(
+                cat_df[log_cols],
+                use_container_width=True,
+                height=280,
+                hide_index=True,
+                column_config={
+                    "Translation (EN)":     st.column_config.TextColumn("Translated Text", width="large"),
+                    "Taxonomy Subcategory": st.column_config.TextColumn("Subcategory",     width="medium"),
+                    "Taxonomy Issue":       st.column_config.TextColumn("Issue",           width="medium"),
+                    "Sentiment":            st.column_config.TextColumn("Sentiment",       width="small"),
+                    "Score":                st.column_config.NumberColumn("Score", format="%d", width="small"),
+                    "Complaint Summary":    st.column_config.TextColumn("Summary",         width="large"),
+                    "Recommended Action":   st.column_config.TextColumn("Action",          width="large"),
+                },
+            )
+    else:
+        st.caption("No individual complaint records found for this category.")
+
+
 # ── Results renderer ─────────────────────────────────────────────────────────
 def render_results(job: dict) -> None:
     df_result = pd.DataFrame(job["data"])
 
-    # Derived values
     total_rows         = job["total_rows"]
     rca_structured     = job.get("rca_structured", [])
-    rca_categories     = job.get("rca_categories", [])
     collective_summary = job.get("collective_summary", "")
     deeper_analysis    = job.get("deeper_analysis", "")
     rca_report         = job.get("rca_report", "")
@@ -129,16 +327,12 @@ def render_results(job: dict) -> None:
         df_result[df_result["Classification"].str.lower() == "complaint"]
         if "Classification" in df_result.columns else pd.DataFrame()
     )
-    complaints    = len(complaints_df)
-    critical_count = (
-        int((df_result["Severity"] == "Critical").sum())
-        if "Severity" in df_result.columns else 0
-    )
+    complaints     = len(complaints_df)
+    non_complaints = total_rows - complaints
 
     cat_counts: dict[str, int] = {}
     if not complaints_df.empty and "Taxonomy Category" in complaints_df.columns:
         cat_counts = complaints_df["Taxonomy Category"].value_counts().to_dict()
-    total_complaints = sum(cat_counts.values()) or 1
 
     rca_sorted = sorted(
         rca_structured,
@@ -148,7 +342,6 @@ def render_results(job: dict) -> None:
 
     color_map = {cat: PALETTE[i % len(PALETTE)] for i, cat in enumerate(cat_counts)}
 
-    # Cap chart to top 9 categories; group the rest as "Others"
     _sorted_cats = sorted(cat_counts.items(), key=lambda x: -x[1])
     _TOP_N = len(PALETTE)
     if len(_sorted_cats) > _TOP_N:
@@ -158,6 +351,18 @@ def render_results(job: dict) -> None:
     else:
         chart_cats = dict(_sorted_cats)
 
+    # Store overlay data so the dialog can access it on every render
+    st.session_state["_overlay_data"] = {
+        "rca_sorted":    rca_sorted,
+        "cat_counts":    cat_counts,
+        "color_map":     color_map,
+        "complaints_df": complaints_df,
+    }
+
+    # Open the overlay dialog if it was triggered
+    if st.session_state.pop("overlay_trigger", False):
+        _show_category_overlay()
+
     # ── Tabs ──────────────────────────────────────────────────────────────────
     tab1, tab2, tab3 = st.tabs(["📊  Overview", "🔍  Category Analysis", "📋  Report Log"])
 
@@ -165,7 +370,6 @@ def render_results(job: dict) -> None:
     with tab1:
         pct_complaints = round(complaints / total_rows * 100, 1) if total_rows else 0.0
 
-        # KPI cards
         st.markdown(f"""
         <div class="rca-kpi-row">
           <div class="rca-kpi-card rca-kpi-blue">
@@ -173,15 +377,15 @@ def render_results(job: dict) -> None:
             <div class="rca-kpi-value">{total_rows}</div>
             <div class="rca-kpi-sub">All uploaded rows</div>
           </div>
-          <div class="rca-kpi-card rca-kpi-red">
-            <div class="rca-kpi-label">Critical Issues</div>
-            <div class="rca-kpi-value">{critical_count}</div>
-            <div class="rca-kpi-sub">High-distress reports flagged</div>
-          </div>
           <div class="rca-kpi-card rca-kpi-amber">
             <div class="rca-kpi-label">Total Complaints</div>
             <div class="rca-kpi-value">{complaints}</div>
             <div class="rca-kpi-sub">{pct_complaints}% of all reports</div>
+          </div>
+          <div class="rca-kpi-card rca-kpi-purple">
+            <div class="rca-kpi-label">Non-Complaints</div>
+            <div class="rca-kpi-value">{non_complaints}</div>
+            <div class="rca-kpi-sub">Inquiries, feedback, requests</div>
           </div>
           <div class="rca-kpi-card rca-kpi-green">
             <div class="rca-kpi-label">Categories Found</div>
@@ -191,7 +395,6 @@ def render_results(job: dict) -> None:
         </div>
         """, unsafe_allow_html=True)
 
-        # Summary banner
         if collective_summary:
             st.markdown(f"""
             <div class="rca-summary-banner">
@@ -203,7 +406,6 @@ def render_results(job: dict) -> None:
             </div>
             """, unsafe_allow_html=True)
 
-        # Donut chart + category bars
         if cat_counts:
             chart_col, bars_col = st.columns([3, 2])
 
@@ -212,17 +414,15 @@ def render_results(job: dict) -> None:
             total_for_donut = sum(values) or 1
 
             with chart_col:
-                # CSS conic-gradient donut — no external library needed
                 gradient_parts = []
                 current = 0.0
-                for label, count in zip(labels, values):
-                    color = color_map.get(label, '#94a3b8')
-                    end   = current + (count / total_for_donut * 360)
+                for label, cnt in zip(labels, values):
+                    color   = color_map.get(label, '#94a3b8')
+                    end     = current + (cnt / total_for_donut * 360)
                     gradient_parts.append(f"{color} {current:.1f}deg {end:.1f}deg")
                     current = end
                 gradient = ", ".join(gradient_parts)
 
-                # Legend rows
                 legend_items = "".join(
                     f'<div style="display:flex;align-items:center;gap:6px;font-size:12px;color:#cbd5e1">'
                     f'<div style="width:10px;height:10px;border-radius:50%;background:{color_map.get(l,"#94a3b8")};flex-shrink:0"></div>'
@@ -239,7 +439,7 @@ def render_results(job: dict) -> None:
                          background:#0e1117;border-radius:50%;display:flex;
                          align-items:center;justify-content:center;flex-direction:column">
                       <span style="font-size:22px;font-weight:700;color:#fafafa;line-height:1">{total_for_donut}</span>
-                      <span style="font-size:11px;color:#8b9197;margin-top:2px">reports</span>
+                      <span style="font-size:11px;color:#8b9197;margin-top:2px">complaints</span>
                     </div>
                   </div>
                   <div style="display:flex;flex-direction:column;gap:6px">{legend_items}</div>
@@ -249,9 +449,9 @@ def render_results(job: dict) -> None:
             with bars_col:
                 max_count = max(values) if values else 1
                 bars_html = ""
-                for label, count in zip(labels, values):
+                for label, cnt in zip(labels, values):
                     color   = color_map.get(label, '#94a3b8')
-                    pct_bar = round(count / max_count * 100)
+                    pct_bar = round(cnt / max_count * 100)
                     short   = label if len(label) <= 26 else label[:24] + "…"
                     bars_html += f"""
                     <div class="rca-cat-row">
@@ -260,52 +460,82 @@ def render_results(job: dict) -> None:
                       <div class="rca-cat-bar-wrap">
                         <div class="rca-cat-bar" style="width:{pct_bar}%;background:{color}"></div>
                       </div>
-                      <div class="rca-cat-count">{count}</div>
+                      <div class="rca-cat-count">{cnt}</div>
                     </div>"""
                 st.markdown(f'<div class="rca-cat-bars">{bars_html}</div>', unsafe_allow_html=True)
 
-        # Severity breakdown table
         if cat_counts:
             st.divider()
-            st.markdown('<p class="rca-section-title">Severity Breakdown by Category</p>', unsafe_allow_html=True)
+            st.markdown('<p class="rca-section-title">Complaint Distribution by Category</p>', unsafe_allow_html=True)
 
-            has_sev = (
-                not complaints_df.empty
-                and "Taxonomy Category" in complaints_df.columns
-                and "Severity" in complaints_df.columns
-            )
-            sev_rows = []
-            for cat, count in sorted(cat_counts.items(), key=lambda x: -x[1]):
-                if has_sev:
-                    cat_df   = complaints_df[complaints_df["Taxonomy Category"] == cat]
-                    crit     = int((cat_df["Severity"] == "Critical").sum())
-                    non_crit = count - crit
-                else:
-                    crit, non_crit = 0, count
-                sev_rows.append({
-                    "Category":    cat,
-                    "Total":       count,
-                    "Critical":    crit,
-                    "Non-Critical": non_crit,
-                    "Severity":    "🔴 Critical" if crit > 0 else "🟢 Non-Critical",
-                })
+            has_score   = "Score"            in complaints_df.columns and not complaints_df.empty
+            has_summary = "Complaint Summary" in complaints_df.columns and not complaints_df.empty
 
-            sev_df  = pd.DataFrame(sev_rows)
-            max_tot = int(sev_df["Total"].max()) if not sev_df.empty else 1
-            st.dataframe(
-                sev_df,
-                use_container_width=True,
-                hide_index=True,
-                column_config={
-                    "Category":    st.column_config.TextColumn("Category",    width="large"),
-                    "Total":       st.column_config.ProgressColumn(
-                                       "Total", min_value=0, max_value=max_tot, format="%d", width="medium"
-                                   ),
-                    "Critical":    st.column_config.NumberColumn("🔴 Critical",    width="small"),
-                    "Non-Critical": st.column_config.NumberColumn("🟢 Non-Critical", width="small"),
-                    "Severity":    st.column_config.TextColumn("Top Severity", width="medium"),
-                },
-            )
+            dist_rows = []
+            for cat, cnt in sorted(cat_counts.items(), key=lambda x: -x[1]):
+                row = {"Category": cat, "Complaints": cnt}
+                if has_score:
+                    cat_df = complaints_df[complaints_df["Taxonomy Category"] == cat]
+                    scores = pd.to_numeric(cat_df["Score"], errors="coerce").dropna()
+                    row["Avg Score"] = round(float(scores.mean()), 1) if not scores.empty else 0.0
+                if has_summary:
+                    cat_df = complaints_df[complaints_df["Taxonomy Category"] == cat]
+                    summaries = cat_df["Complaint Summary"].dropna().astype(str)
+                    summaries = summaries[summaries.str.strip() != ""]
+                    row["Top Complaint Summary"] = summaries.iloc[0] if not summaries.empty else "—"
+                dist_rows.append(row)
+
+            dist_df = pd.DataFrame(dist_rows)
+            max_tot = int(dist_df["Complaints"].max()) if not dist_df.empty else 1
+            col_cfg: dict = {
+                "Category":   st.column_config.TextColumn("Category",   width="medium"),
+                "Complaints": st.column_config.ProgressColumn(
+                                  "Complaints", min_value=0, max_value=max_tot, format="%d", width="small"
+                              ),
+            }
+            if has_score:
+                col_cfg["Avg Score"] = st.column_config.NumberColumn("Avg Score", format="%.1f", width="small")
+            if has_summary:
+                col_cfg["Top Complaint Summary"] = st.column_config.TextColumn(
+                    "Top Complaint Summary", width="large"
+                )
+            st.dataframe(dist_df, use_container_width=True, hide_index=True, column_config=col_cfg)
+
+            # ── Individual complaint records ───────────────────────────────────
+            st.divider()
+            st.markdown('<p class="rca-section-title">Individual Complaint Records</p>', unsafe_allow_html=True)
+
+            if not complaints_df.empty:
+                rec_cols = [c for c in [
+                    "Translation (EN)",
+                    "Complaint Summary",
+                    "Taxonomy Category",
+                    "Taxonomy Subcategory",
+                    "Taxonomy Issue",
+                    "Recommended Action",
+                    "Sentiment",
+                    "Score",
+                ] if c in complaints_df.columns]
+
+                if rec_cols:
+                    st.dataframe(
+                        complaints_df[rec_cols].reset_index(drop=True),
+                        use_container_width=True,
+                        height=420,
+                        hide_index=True,
+                        column_config={
+                            "Translation (EN)":     st.column_config.TextColumn("Translated Text",     width="large"),
+                            "Complaint Summary":    st.column_config.TextColumn("Complaint Summary",   width="large"),
+                            "Taxonomy Category":    st.column_config.TextColumn("Category",            width="medium"),
+                            "Taxonomy Subcategory": st.column_config.TextColumn("Subcategory",         width="medium"),
+                            "Taxonomy Issue":       st.column_config.TextColumn("Issue",               width="medium"),
+                            "Recommended Action":   st.column_config.TextColumn("Recommended Action",  width="large"),
+                            "Sentiment":            st.column_config.TextColumn("Sentiment",           width="small"),
+                            "Score":                st.column_config.NumberColumn("Score", min_value=0, max_value=10, format="%d", width="small"),
+                        },
+                    )
+            else:
+                st.caption("No complaint records available.")
 
     # ═══════════════════════ TAB 2: CATEGORY ANALYSIS ════════════════════════
     with tab2:
@@ -321,11 +551,6 @@ def render_results(job: dict) -> None:
         if not rca_sorted:
             st.info("No category analysis data available.")
         else:
-            has_sev_col = (
-                not complaints_df.empty
-                and "Taxonomy Category" in complaints_df.columns
-                and "Severity" in complaints_df.columns
-            )
             has_sub_col = (
                 not complaints_df.empty
                 and "Taxonomy Category" in complaints_df.columns
@@ -340,15 +565,11 @@ def render_results(job: dict) -> None:
                 pair = rca_sorted[i:i + 2]
                 cols = st.columns(2, gap="small")
 
-                for col, entry in zip(cols, pair):
+                for j, (col, entry) in enumerate(zip(cols, pair)):
+                    cat_idx  = i + j
                     category = entry.get("category", "Unknown")
                     count    = cat_counts.get(category, 0)
                     color    = color_map.get(category, "#94a3b8")
-
-                    has_critical = False
-                    if has_sev_col:
-                        cat_df       = complaints_df[complaints_df["Taxonomy Category"] == category]
-                        has_critical = bool((cat_df["Severity"] == "Critical").any())
 
                     root_cause        = entry.get("root_cause", "—")
                     deeper_root_cause = entry.get("deeper_root_cause", "")
@@ -365,10 +586,6 @@ def render_results(job: dict) -> None:
                             .to_dict()
                         )
 
-                    sev_color = "#f87171" if has_critical else "#4ade80"
-                    sev_text  = "Critical" if has_critical else "Non-Critical"
-
-                    # ── subcategory pills (in header, under category name) ─────
                     pills_html = "".join(
                         f'<span class="sub-pill" style="'
                         f'color:{color};'
@@ -379,7 +596,6 @@ def render_results(job: dict) -> None:
                         for s, _ in sub_counts.items() if s
                     )
 
-                    # ── deeper root cause ─────────────────────────────────────
                     deeper_html = ""
                     if deeper_root_cause:
                         deeper_html = (
@@ -389,7 +605,6 @@ def render_results(job: dict) -> None:
                             f'</div>'
                         )
 
-                    # ── issue breakdown (full width, bullet = card color) ──────
                     issue_items = "".join(
                         f'<div style="font-size:12.5px;color:#cbd5e1;padding:1px 0;line-height:1.4">'
                         f'<span style="color:{color};margin-right:5px;font-size:15px;line-height:1;vertical-align:middle">·</span>'
@@ -397,21 +612,19 @@ def render_results(job: dict) -> None:
                         for iss in issue_breakdown[:4]
                     ) or f'<div style="font-size:12.5px;color:#475569">—</div>'
 
-                    # ── recommended actions ───────────────────────────────────
                     act_items = "".join(
                         f'<div style="font-size:12.5px;color:#7dd3a8;padding:1px 0;line-height:1.4">'
-                        f'<span style="color:#4a9e72;margin-right:4px;font-weight:600">{idx}.</span>{a}</div>'
-                        for idx, a in enumerate(next_actions[:4], 1)
+                        f'<span style="color:#4a9e72;margin-right:4px;font-weight:600">{idx2}.</span>{a}</div>'
+                        for idx2, a in enumerate(next_actions[:4], 1)
                     ) or f'<div style="font-size:12.5px;color:#475569">—</div>'
 
-                    card = f"""<div style="background:#1a1d27;border-top:1px solid #252836;border-right:1px solid #252836;border-bottom:1px solid #252836;border-left:3px solid {color};border-radius:8px;padding:11px 13px">
+                    card = f"""<div style="background:#1a1d27;border-top:1px solid #252836;border-right:1px solid #252836;border-bottom:none;border-left:3px solid {color};border-radius:8px 8px 0 0;padding:11px 13px">
 
   <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:2px">
     <div style="font-size:15px;font-weight:700;color:#f1f5f9;line-height:1.25;flex:1;padding-right:12px">{category}</div>
     <div style="text-align:right;flex-shrink:0;line-height:1.3">
       <span style="font-size:19px;font-weight:700;color:#f1f5f9">{count}</span>
-      <span style="font-size:11px;color:#64748b"> reports</span><br>
-      <span style="font-size:11px;font-weight:600;color:{sev_color}">&#9679; {sev_text}</span>
+      <span style="font-size:11px;color:#64748b"> reports</span>
     </div>
   </div>
 
@@ -438,6 +651,16 @@ def render_results(job: dict) -> None:
 
                     with col:
                         st.markdown(card, unsafe_allow_html=True)
+                        st.markdown('<div class="ov-btn-wrap">', unsafe_allow_html=True)
+                        if st.button(
+                            f"↗  View all subcategories & reports",
+                            key=f"open_cat_{cat_idx}",
+                            use_container_width=True,
+                        ):
+                            st.session_state.overlay_cat_idx = cat_idx
+                            st.session_state.overlay_trigger = True
+                            st.rerun()
+                        st.markdown('</div>', unsafe_allow_html=True)
 
                 st.markdown('<div style="margin-bottom:6px"></div>', unsafe_allow_html=True)
 
@@ -453,15 +676,24 @@ def render_results(job: dict) -> None:
 
     # ═════════════════════════ TAB 3: REPORT LOG ═════════════════════════════
     with tab3:
-        # Column selection for the log view
         log_cols = [c for c in [
-            "Translation (EN)", "Original Text", "Language",
-            "Taxonomy Category", "Taxonomy Subcategory", "Severity", "Classification", "Confidence",
+            "Original Text",
+            "Translation (EN)",
+            "Complaint Summary",
+            "Recommended Action",
+            "Taxonomy Category",
+            "Taxonomy Subcategory",
+            "Taxonomy Issue",
+            "Sentiment",
+            "Score",
+            "Message Type",
+            "Classification",
+            "Confidence",
+            "Language",
         ] if c in df_result.columns]
         df_log = df_result[log_cols].copy() if log_cols else df_result.copy()
 
-        # Filter controls
-        f1, f2, f3, f4 = st.columns([3, 1, 1, 1])
+        f1, f2, f3, f4, f5 = st.columns([3, 1, 1, 1, 1])
 
         search_term = f1.text_input(
             "search", label_visibility="collapsed",
@@ -482,12 +714,21 @@ def render_results(job: dict) -> None:
             sub_opts += sorted(sub_pool["Taxonomy Subcategory"].dropna().unique().tolist())
         sub_filter = f3.selectbox("Subcategory", sub_opts, label_visibility="collapsed")
 
-        sev_filter = f4.selectbox(
-            "Severity", ["All Severities", "Critical", "Non-Critical"],
-            label_visibility="collapsed",
-        )
+        issue_opts = ["All Issues"]
+        if "Taxonomy Issue" in df_result.columns:
+            issue_pool = df_result.copy()
+            if cat_filter != "All Categories" and "Taxonomy Category" in df_result.columns:
+                issue_pool = issue_pool[issue_pool["Taxonomy Category"] == cat_filter]
+            if sub_filter != "All Subcategories" and "Taxonomy Subcategory" in df_result.columns:
+                issue_pool = issue_pool[issue_pool["Taxonomy Subcategory"] == sub_filter]
+            issue_opts += sorted(issue_pool["Taxonomy Issue"].dropna().unique().tolist())
+        issue_filter = f4.selectbox("Issue", issue_opts, label_visibility="collapsed")
 
-        # Apply filters
+        msg_opts = ["All Types"]
+        if "Message Type" in df_result.columns:
+            msg_opts += sorted(df_result["Message Type"].dropna().unique().tolist())
+        msg_filter = f5.selectbox("Message Type", msg_opts, label_visibility="collapsed")
+
         df_filtered = df_log.copy()
         if search_term and "Translation (EN)" in df_filtered.columns:
             df_filtered = df_filtered[
@@ -497,11 +738,33 @@ def render_results(job: dict) -> None:
             df_filtered = df_filtered[df_filtered["Taxonomy Category"] == cat_filter]
         if sub_filter != "All Subcategories" and "Taxonomy Subcategory" in df_filtered.columns:
             df_filtered = df_filtered[df_filtered["Taxonomy Subcategory"] == sub_filter]
-        if sev_filter != "All Severities" and "Severity" in df_filtered.columns:
-            df_filtered = df_filtered[df_filtered["Severity"] == sev_filter]
+        if issue_filter != "All Issues" and "Taxonomy Issue" in df_filtered.columns:
+            df_filtered = df_filtered[df_filtered["Taxonomy Issue"] == issue_filter]
+        if msg_filter != "All Types" and "Message Type" in df_filtered.columns:
+            df_filtered = df_filtered[df_filtered["Message Type"] == msg_filter]
 
         st.caption(f"Showing **{len(df_filtered)}** of **{len(df_result)}** reports")
-        st.dataframe(df_filtered, use_container_width=True, height=500, hide_index=False)
+        st.dataframe(
+            df_filtered,
+            use_container_width=True,
+            height=500,
+            hide_index=False,
+            column_config={
+                "Original Text":        st.column_config.TextColumn("Original Text",       width="medium"),
+                "Translation (EN)":     st.column_config.TextColumn("Translated Text",     width="large"),
+                "Complaint Summary":    st.column_config.TextColumn("Complaint Summary",   width="large"),
+                "Recommended Action":   st.column_config.TextColumn("Recommended Action",  width="large"),
+                "Taxonomy Category":    st.column_config.TextColumn("Category",            width="medium"),
+                "Taxonomy Subcategory": st.column_config.TextColumn("Subcategory",         width="medium"),
+                "Taxonomy Issue":       st.column_config.TextColumn("Issue",               width="medium"),
+                "Sentiment":            st.column_config.TextColumn("Sentiment",           width="small"),
+                "Score":                st.column_config.NumberColumn("Score", min_value=0, max_value=10, format="%d", width="small"),
+                "Message Type":         st.column_config.TextColumn("Message Type",        width="small"),
+                "Classification":       st.column_config.TextColumn("Classification",      width="small"),
+                "Confidence":           st.column_config.TextColumn("Confidence",          width="small"),
+                "Language":             st.column_config.TextColumn("Lang",                width="small"),
+            },
+        )
 
         st.divider()
         dl1, dl2 = st.columns(2)
@@ -522,7 +785,8 @@ def render_results(job: dict) -> None:
 
     st.divider()
     if st.button("🔄  Start New Analysis", use_container_width=True):
-        del st.session_state["job_result"]
+        for k in ["job_result", "overlay_cat_idx", "overlay_trigger", "_overlay_data"]:
+            st.session_state.pop(k, None)
         st.rerun()
 
 

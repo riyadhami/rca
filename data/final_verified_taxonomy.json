@@ -1,0 +1,611 @@
+{
+  "Financing and Mortgages": {
+    "Home Finance": [
+      "Service Related",
+      "Issues Related to Installments, Profit and Charges",
+      "Finance Deferment - COVID 19",
+      "Enquiry"
+    ],
+    "Auto Finance": [
+      "Service Related",
+      "Finance Deferment - COVID 19",
+      "Issues Related to Installments, Profit and Charges",
+      "Enquiry"
+    ],
+    "Consumer Finance": [
+      "Service Related",
+      "Issues Related to Installments, Profit and Charges",
+      "Finance Deferment - COVID 19",
+      "Enquiry"
+    ],
+    "Request Received from CBO": [
+      "CBO Appeal letter"
+    ],
+    "Loans/ Financing": [
+      "Enquiry on Financial Related"
+    ]
+  },
+  "Accounts": {
+    "Customer Details": [
+      "Customer Details not Updated"
+    ],
+    "Current Account": [
+      "Account transactions",
+      "Account Status",
+      "Account Related issues",
+      "Account Details Related",
+      "Overseas Customer",
+      "Account Statement",
+      "Mail Statement",
+      "Account related Enquiry",
+      "Account related Request",
+      "Unauthorized Transaction"
+    ],
+    "Fixed Deposit": [
+      "Account Status",
+      "Unauthorized Transaction",
+      "Account transactions",
+      "Account Details Related",
+      "Account related Enquiry",
+      "Account Related issues",
+      "Enquiry",
+      "Requests"
+    ],
+    "Statements": [
+      "Mail Statement",
+      "Electronic Statement"
+    ],
+    "Savings Plan": [
+      "Account Status",
+      "Account transactions"
+    ],
+    "Notification": [
+      "Account Notifications"
+    ],
+    "Savings Account": [
+      "Account transactions",
+      "Account Status",
+      "Account Details Related",
+      "Overseas Customer",
+      "Unauthorized Transaction",
+      "Social Protection Funds Related",
+      "Account Related issues"
+    ],
+    "Child Account": [
+      "Account transactions",
+      "Account Details Related",
+      "Account Status",
+      "Social Protection Funds Related"
+    ],
+    "Floosi Account": [
+      "Account transactions",
+      "Account Details Related",
+      "Account Status",
+      "Social Protection Funds Related"
+    ],
+    "Government Account": [
+      "Account related Request"
+    ],
+    "Requests": [
+      "Transaction Details"
+    ],
+    "VAT": [
+      "Account Statement",
+      "VAT Related Enquiry"
+    ],
+    "Social Protection Funds Related": [
+      "Account transactions"
+    ],
+    "Corporate Account": [
+      "Account related Request"
+    ],
+    "Customer Segment": [
+      "Gifting ",
+      "Downgrade Request from Asalah",
+      "Upgrade Request to Asalah",
+      "Downgrade Request From Al Jawhar",
+      "Upgrade Request to Al Jawhar",
+      "Upgrade Request to Hafawa",
+      "Downgrade Request from Hafawa"
+    ],
+    "Customer Details/ Information Related": [
+      "Customer Details not Updated"
+    ],
+    "Financial Aid": [
+      "Shaheen Cyclone"
+    ],
+    "Najahi Account/ Corporate Account": [
+      "Account related Request"
+    ]
+  },
+  "Cheques": {
+    "Other Banks Cheques": [
+      "Cheque Services",
+      "Cheque Transactions "
+    ],
+    "Meethaq Cheques": [
+      "Cheque Transactions ",
+      "Service Related",
+      "Cheque Services",
+      "Delivery Request"
+    ],
+    "Bank Muscat Cheques": [
+      "Cheque Transactions ",
+      "Service Related",
+      "Cheque Services",
+      "Delivery Request"
+    ],
+    "Requests": [
+      "Service Related"
+    ],
+    "Government Cheque Details": [
+      "Cheque Transactions "
+    ]
+  },
+  "Funds Transfer": {
+    "Own Accounts": [
+      "Outgoing Funds Transfer",
+      "Incoming Funds Transfer"
+    ],
+    "Other Accounts Within Bank": [
+      "Outgoing Funds Transfer",
+      "Amount Below 250,000 OMR",
+      "Transfer Amount within Bank Muscat Accounts",
+      "Incoming Funds Transfer",
+      "Amount Above 250,000 OMR",
+      "Finance Department Related Requests"
+    ],
+    "International Transfers": [
+      "Outgoing Funds Transfer",
+      "Overseas Customer",
+      "Transfer Amount to International Bank Account",
+      "Incoming Funds Transfer"
+    ],
+    "Enquiry": [
+      "Fund Transfer related Enquiry "
+    ],
+    "Other Accounts Within Oman": [
+      "Transfer Amount to Other Bank Account",
+      "Amount Below 20,000 OMR",
+      "Incoming Funds Transfer",
+      "Amount Above 20,000 OMR"
+    ],
+    "Standing Instructions": [
+      "Outgoing Funds Transfer"
+    ],
+    "Direct Debit": [
+      "Outgoing Funds Transfer"
+    ],
+    "Government Transaction  Details": [
+      "Amount Below 20,000 OMR",
+      "Amount Above 20,000 OMR"
+    ],
+    "Speed Transfer": [
+      "Outgoing Funds Transfer"
+    ]
+  },
+  "ATM/CDM bank Muscat and Meethaq": {
+    "Bank Muscat Devices": [
+      "Cheque Deposit",
+      "Premises",
+      "Transfer Amount",
+      "Device issues",
+      "Cash Deposit",
+      "Cash withdrawal",
+      "Bulk Cash Deposit",
+      "Cash Deposit through other Banks Cards"
+    ],
+    "Bank Meethaq Devices": [
+      "Transfer Amount",
+      "Cheque Deposit",
+      "Cash withdrawal",
+      "Cash Deposit",
+      "Device issues",
+      "Cash Deposit through other Banks Cards"
+    ]
+  },
+  "Cards": {
+    "Debit Card": [
+      "Card Status",
+      "Branch Delivery Request",
+      "E-PIN Enquiry",
+      "Debit Card Related Enquiry",
+      "Card Transactions Dispute",
+      "Card Offers",
+      "Request",
+      "Loyalty Program / Offers",
+      "Delivery Request",
+      "Transaction or Payment Issues",
+      "E-PIN Issues",
+      "Notification or Statement Issues",
+      "Courier Delivery Services",
+      "Overseas Customer"
+    ],
+    "Credit Card": [
+      "Card Status",
+      "Branch Delivery Request",
+      "Credit Card Related Enquiry",
+      "E-PIN Enquiry",
+      "Card Transactions Dispute",
+      "Card Offers",
+      "Loyalty Program / Offers",
+      "Transaction or Payment Issues",
+      "E-PIN Issues",
+      "Notification or Statement Issues",
+      "Reward Points or Miles Issue",
+      "Overseas Customer",
+      "Courier Delivery Services",
+      "Delivery Request"
+    ],
+    "Prepaid Card": [
+      "Branch Delivery Request",
+      "Card Transactions Dispute",
+      "Card Offers",
+      "Reward Points or Shukran Issue",
+      "Card Status",
+      "Request",
+      "E-PIN Issues",
+      "Transaction or Payment Issues",
+      "Delivery Request",
+      "Notification or Statement Issues",
+      "Courier Delivery Services"
+    ],
+    "Enquiry": [
+      "Card related Enquiry"
+    ],
+    "Delivery Request": [
+      "Retail Enterprises Requests"
+    ],
+    "Cards Printing Kiosk": [
+      "Cards Printing Issues"
+    ],
+    "Apple Pay": [
+      "Debit Card",
+      "Prepaid Card",
+      "Credit Card"
+    ],
+    "Samsung Pay": [
+      "Debit Card",
+      "Prepaid Card",
+      "Credit Card"
+    ]
+  },
+  "Loans and Mortgages": {
+    "Home Loan": [
+      "Issues Related to Installments, Interest and Charges",
+      "Service Related",
+      "Certification not received",
+      "Loan Deferment  COVID 19",
+      "Loan Deferment Related"
+    ],
+    "Auto Loan": [
+      "Issues Related to Installments, Interest and Charges",
+      "Service Related",
+      "Loan Deferment Related"
+    ],
+    "Consumer Loan": [
+      "Issues Related to Installments, Interest and Charges",
+      "Service Related",
+      "Loan Deferment Related",
+      "Loan Deferment  COVID 19"
+    ],
+    "Enquiry": [
+      "Loan related Enquires"
+    ],
+    "Loans/ Financing": [
+      "Issues Related to Installments, Interest and Charges",
+      "Service Related",
+      "Enquiry on Loan Related"
+    ],
+    "Request Received from CBO": [
+      "CBO Appeal letter"
+    ]
+  },
+  "Meethaq Apps": {
+    "Enquiry": [
+      "Mobile banking Enquires "
+    ],
+    "Mobile Banking": [
+      "OTP Related",
+      "Account Details Related",
+      "Mobile Payments related issues",
+      "Registration / log in Issues",
+      "Transactions Related"
+    ],
+    "Meethaq Wallet": [
+      "Mobile Payments related issues",
+      "Fund Transfer Related issues",
+      "Registration / log in Issues",
+      "Transactions Related"
+    ]
+  },
+  "BM Apps": {
+    "Mobile Banking": [
+      "OTP Related",
+      "Mobile Payments related issues",
+      "Transactions Related",
+      "Registration / log in Issues"
+    ],
+    "Enquiry": [
+      "Mobile banking Enquires "
+    ],
+    "BM Wallet": [
+      "Fund Transfer Related issues",
+      "Mobile Payments related issues",
+      "Registration / log in Issues"
+    ]
+  },
+  "Internet Banking": {
+    "Internet Banking Services": [
+      "Secure Token",
+      "Account Statement",
+      "User ID / Log In",
+      "Account Related",
+      "File Upload-Wages Protection System",
+      "Internet Banking Training",
+      "File Upload-Within Bank",
+      "File Upload-Other Bank",
+      "File Upload-Vendor Payment",
+      "Remote Deposit Capture",
+      "CNR Direct Debit",
+      "Fund Transfer-Within Bank",
+      "Fund Transfer-International",
+      "Soft Token",
+      "Fund Transfer-Within Oman",
+      "Bill Payments",
+      "MT940",
+      "Fund Transfer-Within Own Account",
+      "Fund Transfer-Tax Payments",
+      "Fund Transfer-Ministry of Finance",
+      "Fund Transfer-Excise Payments",
+      "Fund Transfer-VAT Payments",
+      "Receivables and Collection",
+      "Transaction Related issues"
+    ],
+    "Transaction Banking Services": [
+      "Account Related",
+      "Virtual Account",
+      "Account Statement",
+      "Secure Token",
+      "Webpage Loading",
+      "H2H- CNR Direct Debit"
+    ],
+    "Retail Enterprises": [
+      "User ID / log in issues",
+      "Account Related",
+      "Secure Token",
+      "File Upload-Wages Protection System",
+      "Internet Banking Training",
+      "File Upload-Other Bank",
+      "File Upload-Within Bank",
+      "File Upload-Vendor Payment",
+      "Account Statement",
+      "Remote Deposit Capture",
+      "User ID / Log In",
+      "Soft Token",
+      "Fund Transfer-Within Bank",
+      "Fund Transfer-International",
+      "Bill Payments"
+    ],
+    "Enquiry": [
+      "Internet banking related Enquires"
+    ],
+    "Business To Business Services": [
+      "File Upload-Wages Protection System",
+      "File Upload-Other Bank",
+      "File Upload-Within Bank",
+      "File Upload-Vendor Payment",
+      "Business To Business Enquiries",
+      "Business To Business Requests"
+    ]
+  },
+  "Certificates (NOC/CLC)": {
+    "No Objection Certificate( NOC)": [
+      "Overseas Customer",
+      "Service Related",
+      "Certificate Details Related"
+    ],
+    "Balance Confirmation": [
+      "Service Related"
+    ],
+    "Customer Liability Certificate( CLC)": [
+      "Certificate Details Related",
+      "Service Related"
+    ]
+  },
+  "ATM / Non bank Muscat and Meethaq": {
+    "Enquiry": [
+      "ATM cash withdrawal Enquiry"
+    ],
+    "Other Local Bank Devices": [
+      "Debit Card",
+      "Credit Card",
+      "Prepaid Card"
+    ],
+    "Gcc Bank Devices": [
+      "Debit Card",
+      "Prepaid Card",
+      "Credit Card"
+    ],
+    "International Bank Devices": [
+      "Prepaid Card",
+      "Credit Card",
+      "Debit Card"
+    ]
+  },
+  "Corporate Credit Admin": {
+    "Loan": [
+      "Loan Related Issues"
+    ],
+    "Facility Release": [
+      "Verification Related"
+    ],
+    "Limit and Operations": [
+      "Credit Facility"
+    ]
+  },
+  "Global Trade Services": {
+    "Import LC": [
+      "Payments",
+      "Documents",
+      "Issuance"
+    ],
+    "Guarantees": [
+      "Local Guarantee",
+      "International Guarantee"
+    ],
+    "LC Murabaha": [
+      "Payments",
+      "Financing"
+    ],
+    "LTR / Advances": [
+      "Payments",
+      "Financing"
+    ],
+    "Direct Remittance": [
+      "Financing"
+    ],
+    "Export LC": [
+      "LC Advising",
+      "Payments",
+      "Documents"
+    ],
+    "Export Documentary Collection": [
+      "Payments",
+      "Documents"
+    ],
+    "Import Documentary Collection": [
+      "Documents",
+      "Payments"
+    ],
+    "Trade Portal": [
+      "Webpage Loading",
+      "Platform Related Enquiries",
+      "File upload Related Issues",
+      "User ID / log in issues"
+    ]
+  },
+  "Merchant": {
+    "POS": [
+      "POS Not Working",
+      "Acquiring Sales",
+      "Payment Related",
+      "Payment inquiry",
+      "Transaction Inquiry",
+      "Transactions Related",
+      "Stationary Request"
+    ],
+    "E-Commerce": [
+      "Payment Gateway"
+    ],
+    "Tap and Go": [
+      "User ID / Log In",
+      "Acquiring Sales",
+      "Transactions Related",
+      "Online Statement Related",
+      "Device Related Issues"
+    ],
+    "Merchant Wallet": [
+      "Wallet transaction Related"
+    ]
+  },
+  "Branch/Staff Experience": {
+    "Staff Behavior and Conduct": [
+      "Customer Appreciation",
+      "Staff Knowledge & Skills",
+      "Adherence to Procedures",
+      "Service & Quality",
+      "Unauthorized Request",
+      "Customer Service Standards"
+    ],
+    "Queue System ": [
+      "Queue Management Efficiency"
+    ]
+  },
+  "Testing Area": {
+    "Testing Category": [
+      "Testing Sub Category"
+    ]
+  },
+  "Bulk Payments": {
+    "File upload Related Issues": [
+      "Allowance",
+      "Salary",
+      "Vendor Payment",
+      "Overtime",
+      "Pension",
+      "Bonus",
+      "Dividends",
+      "Charity",
+      "End of service benefits"
+    ],
+    "File upload Related Enquiries": [
+      "Salary",
+      "Charity",
+      "Vendor Payment",
+      "Allowance"
+    ],
+    "File upload Related Requests": [
+      "Bonus",
+      "Charity",
+      "Allowance",
+      "Salary",
+      "Vendor Payment",
+      "Overtime",
+      "Dividends",
+      "End of service benefits"
+    ]
+  },
+  "Safe Deposit Lockers": {
+    "Large Locker Size": [
+      "Transaction Related issues",
+      "Safe Deposit Locker Related Issues",
+      "Enquiry"
+    ],
+    "Small Locker Size": [
+      "Safe Deposit Locker Related Issues",
+      "Enquiry",
+      "Transaction Related issues"
+    ],
+    "Extra large Locker Size": [
+      "Transaction Related issues"
+    ],
+    "Medium Locker Size": [
+      "Transaction Related issues",
+      "Enquiry",
+      "Safe Deposit Locker Related Issues"
+    ]
+  },
+  "Insurance": {
+    "Metlife": [
+      "Hayatuna",
+      "Family Protection, Critical Illnesses, Medical Cash, Salary Protection"
+    ],
+    "GIG": [
+      "Home comfort",
+      "Unified Credit Life",
+      "Life insurance ( Loans )"
+    ],
+    "Takaful Oman": [
+      "Property Insurance",
+      "Travel insurance"
+    ]
+  },
+  "Takaful": {
+    "Term Life": [
+      "Policy Related Issues",
+      "Premium/ Contribution Issues"
+    ],
+    "Motor Takaful": [
+      "Premium/ Contribution Issues"
+    ]
+  },
+  "Bill Payments": {
+    "Traffic Services": [
+      "ROP Fine"
+    ],
+    "Mobile Banking": [
+      "Amex"
+    ]
+  }
+}
