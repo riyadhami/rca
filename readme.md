@@ -25,4 +25,3 @@ uv run uvicorn backend.main:app --reload
 # Frontend (Streamlit) — http://localhost:8501
 uv run streamlit run frontend/app.py
 ```
-

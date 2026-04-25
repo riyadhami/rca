@@ -1,9 +1,11 @@
 import io
+import json
 import os
 import time
 import pandas as pd
 import requests
 import streamlit as st
+import streamlit.components.v1 as components
 from dotenv import load_dotenv
 
 load_dotenv()
@@ -67,6 +69,13 @@ footer{display:none!important}
 
 /* Tighten Streamlit page padding */
 .block-container{padding-top:1.5rem!important;padding-left:1.8rem!important;padding-right:1.8rem!important}
+
+
+
+/* Green success toast — positioned bottom-center */
+div[data-testid="stToast"]{background:#0d1f14!important;border:1px solid #2d6a3f!important;border-radius:8px!important;bottom:24px!important;top:auto!important;left:50%!important;right:auto!important;transform:translateX(-50%)!important;box-shadow:0 4px 16px rgba(0,0,0,.5)!important}
+div[data-testid="stToast"] p,div[data-testid="stToast"] span{color:#6ee7a0!important}
+div[data-testid="stToast"] [data-testid="stMarkdownContainer"] p{color:#6ee7a0!important}
 
 /* ── Category card "expand" button: seamless card footer ── */
 .ov-btn-wrap{margin-top:-2px}
@@ -142,6 +151,223 @@ def _rgba(hex_color: str, alpha: float) -> str:
     return f"rgba({r},{g},{b},{alpha})"
 
 
+def _get_effective_entry(entry: dict) -> dict:
+    """Returns entry with any user edits from session state applied."""
+    category = entry.get("category", "")
+    edits = st.session_state.get("_user_edits", {})
+    if category in edits:
+        return {**entry, **edits[category]}
+    return entry
+
+
+def _format_category_md(entry: dict) -> str:
+    """Format a category entry as markdown text suitable for clipboard copy."""
+    cat     = entry.get("category", "Unknown")
+    rc      = entry.get("root_cause", "")
+    drc     = entry.get("deeper_root_cause", "")
+    issues  = entry.get("issue_breakdown", [])
+    actions = entry.get("next_actions", [])
+    lines = [f"## {cat}", "", f"**Root Cause:** {rc}", ""]
+    if drc:
+        lines += [f"**Deeper Root Cause:** {drc}", ""]
+    lines += ["### Issue Breakdown"]
+    lines += [f"- {iss}" for iss in issues]
+    lines += ["", "### Recommended Actions"]
+    lines += [f"{k}. {a}" for k, a in enumerate(actions, 1)]
+    return "\n".join(lines)
+
+
+def _render_copy_button(text_md: str, unique_key: str) -> None:
+    """Render a JS-powered clipboard copy button with a toast notification."""
+    safe = json.dumps(text_md)
+    components.html(
+        f"""<!DOCTYPE html><html><head><style>
+body{{margin:0;padding:2px 0;background:transparent;font-family:Inter,system-ui,sans-serif}}
+#btn{{background:transparent;border:1px solid #31333f;border-radius:5px;color:#64748b;
+      font-size:11px;padding:4px 10px;cursor:pointer;display:inline-flex;align-items:center;
+      gap:4px;transition:all .15s;white-space:nowrap}}
+#btn:hover{{border-color:#4a5070;color:#94a3b8;background:#1e2230}}
+#toast{{display:none;position:fixed;bottom:10px;left:50%;transform:translateX(-50%);
+        background:#0f2417;border:1px solid #2d5a2d;border-radius:6px;padding:6px 14px;
+        color:#7dd3a8;font-size:11px;align-items:center;gap:5px;white-space:nowrap;z-index:9999}}
+</style></head><body>
+<button id="btn" onclick="doCopy()">
+  <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" style="flex-shrink:0">
+    <rect x="9" y="9" width="13" height="13" rx="2"></rect>
+    <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path>
+  </svg>Copy
+</button>
+<div id="toast">
+  <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#7dd3a8" stroke-width="2.5">
+    <polyline points="20 6 9 17 4 12"></polyline>
+  </svg>&nbsp;Copied to Clipboard
+</div>
+<script>
+function doCopy(){{
+  navigator.clipboard.writeText({safe}).then(function(){{
+    var t=document.getElementById('toast');
+    t.style.display='flex';
+    setTimeout(function(){{t.style.display='none'}},2500);
+  }}).catch(function(e){{console.log('copy failed',e)}});
+}}
+</script></body></html>""",
+        height=38,
+        scrolling=False,
+    )
+
+
+def _render_edit_panel(category: str, entry: dict, key_prefix: str = "") -> None:
+    """Render inline edit controls for issue_breakdown and next_actions of a category."""
+    cat_key = key_prefix + "".join(c if c.isalnum() else "_" for c in category)
+    if "_user_edits" not in st.session_state:
+        st.session_state["_user_edits"] = {}
+    edits = st.session_state["_user_edits"]
+    if category not in edits:
+        edits[category] = {
+            "issue_breakdown": list(entry.get("issue_breakdown", [])),
+            "next_actions":    list(entry.get("next_actions", [])),
+        }
+    iss  = edits[category]["issue_breakdown"]
+    acts = edits[category]["next_actions"]
+    LBL_S = "font-size:10px;font-weight:700;letter-spacing:.8px;text-transform:uppercase;color:#64748b;margin-bottom:4px"
+    ec1, ec2 = st.columns(2)
+    with ec1:
+        st.markdown(f'<div style="{LBL_S}">Issue Breakdown</div>', unsafe_allow_html=True)
+        for k, item in enumerate(list(iss)):
+            ic1, ic2 = st.columns([8, 1])
+            ic1.markdown(f'<span style="font-size:12px;color:#cbd5e1">· {item}</span>', unsafe_allow_html=True)
+            if ic2.button("✕", key=f"del_iss_{cat_key}_{k}", help="Remove this item"):
+                edits[category]["issue_breakdown"].pop(k)
+                st.rerun()
+        with st.form(key=f"add_iss_{cat_key}", clear_on_submit=True):
+            ni = st.text_input("Add issue", placeholder="Type new issue...", label_visibility="collapsed")
+            if st.form_submit_button("+ Add Issue") and ni.strip():
+                edits[category]["issue_breakdown"].append(ni.strip())
+                st.rerun()
+    with ec2:
+        st.markdown(f'<div style="{LBL_S}">Recommended Actions</div>', unsafe_allow_html=True)
+        for k, item in enumerate(list(acts)):
+            ac1, ac2 = st.columns([8, 1])
+            ac1.markdown(f'<span style="font-size:12px;color:#7dd3a8">{k + 1}. {item}</span>', unsafe_allow_html=True)
+            if ac2.button("✕", key=f"del_act_{cat_key}_{k}", help="Remove this item"):
+                edits[category]["next_actions"].pop(k)
+                st.rerun()
+        with st.form(key=f"add_act_{cat_key}", clear_on_submit=True):
+            na = st.text_input("Add action", placeholder="Type new action...", label_visibility="collapsed")
+            if st.form_submit_button("+ Add Action") and na.strip():
+                edits[category]["next_actions"].append(na.strip())
+                st.rerun()
+
+
+def _render_card_component(
+    category: str, count: int, color: str,
+    root_cause: str, deeper_root_cause: str,
+    issue_breakdown: list, next_actions: list,
+    pills_html: str, md_text: str,
+) -> None:
+    """Render a category card as a self-contained HTML/JS component.
+    The copy button appears directly under the report count in the header."""
+    safe_md = json.dumps(md_text)
+    LBL_CSS = "font-size:10px;font-weight:700;letter-spacing:.9px;text-transform:uppercase;color:#64748b;margin-bottom:3px"
+
+    pills_section = f'<div style="margin-bottom:5px">{pills_html}</div>' if pills_html else ""
+
+    deeper_block = ""
+    if deeper_root_cause:
+        deeper_block = (
+            f'<div style="margin-bottom:6px">'
+            f'<div style="{LBL_CSS}">Deeper Root Cause</div>'
+            f'<div style="background:#12141a;border-radius:0 4px 4px 0;padding:7px 10px;'
+            f'line-height:1.5;font-size:13px;color:#e2e8f0;border-left:2px solid #8b5cf6">'
+            f'{deeper_root_cause}</div></div>'
+        )
+
+    issue_items = "".join(
+        f'<div style="font-size:12.5px;color:#cbd5e1;padding:1px 0;line-height:1.4">'
+        f'<span style="color:{color};margin-right:5px;font-size:15px;vertical-align:middle">·</span>'
+        f'{iss}</div>'
+        for iss in issue_breakdown[:4]
+    ) or '<div style="font-size:12.5px;color:#475569">—</div>'
+
+    act_items = "".join(
+        f'<div style="font-size:12.5px;color:#7dd3a8;padding:1px 0;line-height:1.4">'
+        f'<span style="color:#4a9e72;margin-right:4px;font-weight:600">{k}.</span>{a}</div>'
+        for k, a in enumerate(next_actions[:4], 1)
+    ) or '<div style="font-size:12.5px;color:#475569">—</div>'
+
+    # Estimate height from content length
+    h = 110
+    h += 26 if pills_html else 0
+    h += 22 + max(22, 18 * (1 + len(root_cause) // 52))
+    if deeper_root_cause:
+        h += 22 + max(22, 18 * (1 + len(deeper_root_cause) // 52))
+    h += 18 + len(issue_breakdown[:4]) * 23
+    h += 20 + len(next_actions[:4]) * 25
+    h += 40  # bottom padding buffer
+
+    html_str = f"""<!DOCTYPE html><html><head><style>
+*{{box-sizing:border-box;margin:0;padding:0}}
+body{{font-family:Inter,system-ui,sans-serif;background:transparent;overflow:hidden}}
+.card{{background:#1a1d27;border-top:1px solid #252836;border-right:1px solid #252836;
+       border-left:3px solid {color};border-radius:8px 8px 0 0;padding:11px 13px}}
+.lbl{{font-size:10px;font-weight:700;letter-spacing:.9px;text-transform:uppercase;color:#64748b;margin-bottom:3px}}
+.cp-btn{{background:transparent;border:1px solid #31333f;border-radius:5px;color:#64748b;
+         font-size:10px;padding:3px 8px;cursor:pointer;display:inline-flex;align-items:center;
+         gap:3px;margin-top:5px;transition:all .15s;white-space:nowrap}}
+.cp-btn:hover{{border-color:#4a5070;color:#94a3b8;background:#1e2230}}
+#toast{{display:none;position:fixed;bottom:6px;left:50%;transform:translateX(-50%);
+        background:#0f2417;border:1px solid #2d5a2d;border-radius:6px;padding:5px 12px;
+        color:#7dd3a8;font-size:11px;align-items:center;gap:4px;white-space:nowrap;z-index:9999}}
+</style></head><body>
+<div class="card">
+  <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:4px">
+    <div style="font-size:15px;font-weight:700;color:#f1f5f9;line-height:1.25;flex:1;padding-right:12px">{category}</div>
+    <div style="text-align:right;flex-shrink:0">
+      <span style="font-size:19px;font-weight:700;color:#f1f5f9">{count}</span>
+      <span style="font-size:11px;color:#64748b"> reports</span>
+      <div><button class="cp-btn" onclick="doCopy()">
+        <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+          <rect x="9" y="9" width="13" height="13" rx="2"></rect>
+          <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path>
+        </svg>Copy
+      </button></div>
+    </div>
+  </div>
+  {pills_section}
+  <div style="height:1px;background:#252836;margin-bottom:6px"></div>
+  <div style="margin-bottom:6px">
+    <div class="lbl">Root Cause</div>
+    <div style="background:#12141a;border-radius:0 4px 4px 0;padding:7px 10px;line-height:1.5;
+                font-size:13px;color:#e2e8f0;border-left:2px solid {color}">{root_cause}</div>
+  </div>
+  {deeper_block}
+  <div style="margin-bottom:6px">
+    <div class="lbl">Issue Breakdown</div>
+    {issue_items}
+  </div>
+  <div>
+    <div class="lbl">Recommended Actions</div>
+    <div style="background:linear-gradient(135deg,#0c1f14 0%,#091510 100%);
+                border:1px solid #1c3d28;border-radius:5px;padding:7px 10px">{act_items}</div>
+  </div>
+</div>
+<div id="toast">
+  <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#7dd3a8" stroke-width="2.5">
+    <polyline points="20 6 9 17 4 12"></polyline>
+  </svg>&nbsp;Copied to Clipboard
+</div>
+<script>
+function doCopy(){{
+  navigator.clipboard.writeText({safe_md}).then(function(){{
+    var t=document.getElementById('toast');t.style.display='flex';
+    setTimeout(function(){{t.style.display='none'}},2500);
+  }}).catch(function(e){{console.log('copy failed',e)}});
+}}
+</script></body></html>"""
+
+    components.html(html_str, height=h, scrolling=False)
+
+
 # ── Category overlay dialog ───────────────────────────────────────────────────
 @st.dialog("Category Deep Dive", width="large")
 def _show_category_overlay() -> None:
@@ -157,7 +383,7 @@ def _show_category_overlay() -> None:
 
     total = len(rca_sorted)
     idx   = st.session_state.get("overlay_cat_idx", 0) % total
-    entry = rca_sorted[idx]
+    entry = _get_effective_entry(rca_sorted[idx])
 
     category = entry.get("category", "Unknown")
     count    = cat_counts.get(category, 0)
@@ -187,6 +413,11 @@ def _show_category_overlay() -> None:
         st.markdown('</div>', unsafe_allow_html=True)
 
     st.markdown('<div style="height:4px"></div>', unsafe_allow_html=True)
+
+    # ── Copy button for this category ─────────────────────────────────────────
+    _ov_cp, _ = st.columns([2, 10])
+    with _ov_cp:
+        _render_copy_button(_format_category_md(entry), f"ov_{idx}")
 
     # ── Category header with color accent ────────────────────────────────────
     st.markdown(
@@ -276,6 +507,10 @@ def _show_category_overlay() -> None:
             unsafe_allow_html=True,
         )
 
+    # ── Edit panel ────────────────────────────────────────────────────────────
+    with st.expander("✏️  Edit Issue Breakdown & Actions"):
+        _render_edit_panel(category, rca_sorted[idx], key_prefix="ov_")
+
     st.divider()
 
     # ── Scrollable reports for this category ──────────────────────────────────
@@ -290,7 +525,7 @@ def _show_category_overlay() -> None:
         cat_df   = complaints_df[complaints_df["Taxonomy Category"] == category].copy()
         log_cols = [c for c in [
             "Translation (EN)", "Taxonomy Subcategory", "Taxonomy Issue",
-            "Sentiment", "Score", "Complaint Summary", "Recommended Action",
+            "Sentiment", "Complaint Summary", "Recommended Action",
         ] if c in cat_df.columns]
 
         if log_cols:
@@ -304,7 +539,6 @@ def _show_category_overlay() -> None:
                     "Taxonomy Subcategory": st.column_config.TextColumn("Subcategory",     width="medium"),
                     "Taxonomy Issue":       st.column_config.TextColumn("Issue",           width="medium"),
                     "Sentiment":            st.column_config.TextColumn("Sentiment",       width="small"),
-                    "Score":                st.column_config.NumberColumn("Score", format="%d", width="small"),
                     "Complaint Summary":    st.column_config.TextColumn("Summary",         width="large"),
                     "Recommended Action":   st.column_config.TextColumn("Action",          width="large"),
                 },
@@ -468,16 +702,11 @@ def render_results(job: dict) -> None:
             st.divider()
             st.markdown('<p class="rca-section-title">Complaint Distribution by Category</p>', unsafe_allow_html=True)
 
-            has_score   = "Score"            in complaints_df.columns and not complaints_df.empty
             has_summary = "Complaint Summary" in complaints_df.columns and not complaints_df.empty
 
             dist_rows = []
             for cat, cnt in sorted(cat_counts.items(), key=lambda x: -x[1]):
                 row = {"Category": cat, "Complaints": cnt}
-                if has_score:
-                    cat_df = complaints_df[complaints_df["Taxonomy Category"] == cat]
-                    scores = pd.to_numeric(cat_df["Score"], errors="coerce").dropna()
-                    row["Avg Score"] = round(float(scores.mean()), 1) if not scores.empty else 0.0
                 if has_summary:
                     cat_df = complaints_df[complaints_df["Taxonomy Category"] == cat]
                     summaries = cat_df["Complaint Summary"].dropna().astype(str)
@@ -493,8 +722,6 @@ def render_results(job: dict) -> None:
                                   "Complaints", min_value=0, max_value=max_tot, format="%d", width="small"
                               ),
             }
-            if has_score:
-                col_cfg["Avg Score"] = st.column_config.NumberColumn("Avg Score", format="%.1f", width="small")
             if has_summary:
                 col_cfg["Top Complaint Summary"] = st.column_config.TextColumn(
                     "Top Complaint Summary", width="large"
@@ -514,7 +741,6 @@ def render_results(job: dict) -> None:
                     "Taxonomy Issue",
                     "Recommended Action",
                     "Sentiment",
-                    "Score",
                 ] if c in complaints_df.columns]
 
                 if rec_cols:
@@ -531,7 +757,6 @@ def render_results(job: dict) -> None:
                             "Taxonomy Issue":       st.column_config.TextColumn("Issue",               width="medium"),
                             "Recommended Action":   st.column_config.TextColumn("Recommended Action",  width="large"),
                             "Sentiment":            st.column_config.TextColumn("Sentiment",           width="small"),
-                            "Score":                st.column_config.NumberColumn("Score", min_value=0, max_value=10, format="%d", width="small"),
                         },
                     )
             else:
@@ -561,6 +786,28 @@ def render_results(job: dict) -> None:
             RC_BOX  = "background:#12141a;border-radius:0 4px 4px 0;padding:7px 10px;line-height:1.5;font-size:13px;color:#e2e8f0"
             ACT_BOX = "background:linear-gradient(135deg,#0c1f14 0%,#091510 100%);border:1px solid #1c3d28;border-radius:5px;padding:7px 10px"
 
+            # Clipboard executor — single always-rendered height=0 iframe before the card grid.
+            # Uses execCommand (more timing-tolerant) + Clipboard API as secondary.
+            _cp_text = st.session_state.pop("_pending_clipboard", None)
+            _cp_script = ""
+            if _cp_text is not None:
+                _safe = json.dumps(_cp_text)
+                _cp_script = (
+                    f"var t={_safe};"
+                    "var a=document.createElement('textarea');a.value=t;"
+                    "a.style.cssText='position:fixed;opacity:0;top:-9999px';"
+                    "document.body.appendChild(a);a.focus();a.select();"
+                    "try{document.execCommand('copy')}catch(e){}"
+                    "document.body.removeChild(a);"
+                    "if(navigator.clipboard)navigator.clipboard.writeText(t).catch(function(){});"
+                )
+                st.toast("Copied to Clipboard", icon="✅")
+            components.html(
+                f"<!DOCTYPE html><html><head><style>html,body{{margin:0;padding:0;overflow:hidden}}</style></head>"
+                f"<body><script>{_cp_script}</script></body></html>",
+                height=0,
+            )
+
             for i in range(0, len(rca_sorted), 2):
                 pair = rca_sorted[i:i + 2]
                 cols = st.columns(2, gap="small")
@@ -571,10 +818,11 @@ def render_results(job: dict) -> None:
                     count    = cat_counts.get(category, 0)
                     color    = color_map.get(category, "#94a3b8")
 
-                    root_cause        = entry.get("root_cause", "—")
-                    deeper_root_cause = entry.get("deeper_root_cause", "")
-                    issue_breakdown   = entry.get("issue_breakdown", [])
-                    next_actions      = entry.get("next_actions", [])
+                    eff_entry         = _get_effective_entry(entry)
+                    root_cause        = eff_entry.get("root_cause", "—")
+                    deeper_root_cause = eff_entry.get("deeper_root_cause", "")
+                    issue_breakdown   = eff_entry.get("issue_breakdown", [])
+                    next_actions      = eff_entry.get("next_actions", [])
 
                     sub_counts: dict[str, int] = {}
                     if has_sub_col:
@@ -587,12 +835,8 @@ def render_results(job: dict) -> None:
                         )
 
                     pills_html = "".join(
-                        f'<span class="sub-pill" style="'
-                        f'color:{color};'
-                        f'background:{_rgba(color, 0.10)};'
-                        f'border-color:{_rgba(color, 0.30)};'
-                        f'--pill-glow:{_rgba(color, 0.45)}">'
-                        f'{s}</span>'
+                        f'<span class="sub-pill" style="color:{color};background:{_rgba(color,.10)};'
+                        f'border-color:{_rgba(color,.30)};--pill-glow:{_rgba(color,.45)}">{s}</span>'
                         for s, _ in sub_counts.items() if s
                     )
 
@@ -609,13 +853,13 @@ def render_results(job: dict) -> None:
                         f'<div style="font-size:12.5px;color:#cbd5e1;padding:1px 0;line-height:1.4">'
                         f'<span style="color:{color};margin-right:5px;font-size:15px;line-height:1;vertical-align:middle">·</span>'
                         f'{iss}</div>'
-                        for iss in issue_breakdown[:4]
+                        for iss in issue_breakdown
                     ) or f'<div style="font-size:12.5px;color:#475569">—</div>'
 
                     act_items = "".join(
                         f'<div style="font-size:12.5px;color:#7dd3a8;padding:1px 0;line-height:1.4">'
                         f'<span style="color:#4a9e72;margin-right:4px;font-weight:600">{idx2}.</span>{a}</div>'
-                        for idx2, a in enumerate(next_actions[:4], 1)
+                        for idx2, a in enumerate(next_actions, 1)
                     ) or f'<div style="font-size:12.5px;color:#475569">—</div>'
 
                     card = f"""<div style="background:#1a1d27;border-top:1px solid #252836;border-right:1px solid #252836;border-bottom:none;border-left:3px solid {color};border-radius:8px 8px 0 0;padding:11px 13px">
@@ -651,16 +895,21 @@ def render_results(job: dict) -> None:
 
                     with col:
                         st.markdown(card, unsafe_allow_html=True)
-                        st.markdown('<div class="ov-btn-wrap">', unsafe_allow_html=True)
-                        if st.button(
-                            f"↗  View all subcategories & reports",
-                            key=f"open_cat_{cat_idx}",
-                            use_container_width=True,
-                        ):
-                            st.session_state.overlay_cat_idx = cat_idx
-                            st.session_state.overlay_trigger = True
-                            st.rerun()
-                        st.markdown('</div>', unsafe_allow_html=True)
+
+                        # Two-button seamless footer (visually connected to card)
+                        b1, b2 = st.columns(2, gap="small")
+                        with b1:
+                            st.markdown('<div class="ov-btn-wrap">', unsafe_allow_html=True)
+                            if st.button("📋  Copy", key=f"copy_btn_{cat_idx}", use_container_width=True):
+                                st.session_state["_pending_clipboard"] = _format_category_md(eff_entry)
+                            st.markdown('</div>', unsafe_allow_html=True)
+                        with b2:
+                            st.markdown('<div class="ov-btn-wrap">', unsafe_allow_html=True)
+                            if st.button("↗  View all", key=f"open_cat_{cat_idx}", use_container_width=True):
+                                st.session_state.overlay_cat_idx = cat_idx
+                                st.session_state.overlay_trigger = True
+                                st.rerun()
+                            st.markdown('</div>', unsafe_allow_html=True)
 
                 st.markdown('<div style="margin-bottom:6px"></div>', unsafe_allow_html=True)
 
@@ -676,21 +925,19 @@ def render_results(job: dict) -> None:
 
     # ═════════════════════════ TAB 3: REPORT LOG ═════════════════════════════
     with tab3:
-        log_cols = [c for c in [
+        # Priority columns shown first; any remaining columns appended after
+        _priority = [
             "Original Text",
             "Translation (EN)",
+            "Message Type",
             "Complaint Summary",
-            "Recommended Action",
+            "Sentiment",
             "Taxonomy Category",
             "Taxonomy Subcategory",
             "Taxonomy Issue",
-            "Sentiment",
-            "Score",
-            "Message Type",
-            "Classification",
-            "Confidence",
-            "Language",
-        ] if c in df_result.columns]
+        ]
+        _extra = [c for c in df_result.columns if c not in _priority]
+        log_cols = [c for c in _priority + _extra if c in df_result.columns]
         df_log = df_result[log_cols].copy() if log_cols else df_result.copy()
 
         f1, f2, f3, f4, f5 = st.columns([3, 1, 1, 1, 1])
@@ -748,18 +995,17 @@ def render_results(job: dict) -> None:
             df_filtered,
             use_container_width=True,
             height=500,
-            hide_index=False,
+            hide_index=True,
             column_config={
-                "Original Text":        st.column_config.TextColumn("Original Text",       width="medium"),
-                "Translation (EN)":     st.column_config.TextColumn("Translated Text",     width="large"),
-                "Complaint Summary":    st.column_config.TextColumn("Complaint Summary",   width="large"),
+                "Original Text":        st.column_config.TextColumn("original_text",       width="medium"),
+                "Translation (EN)":     st.column_config.TextColumn("translated_text",     width="large"),
+                "Message Type":         st.column_config.TextColumn("message_type",        width="small"),
+                "Complaint Summary":    st.column_config.TextColumn("complaint_summary",   width="large"),
+                "Sentiment":            st.column_config.TextColumn("sentiment",           width="small"),
+                "Taxonomy Category":    st.column_config.TextColumn("category",            width="medium"),
+                "Taxonomy Subcategory": st.column_config.TextColumn("sub_category",        width="medium"),
+                "Taxonomy Issue":       st.column_config.TextColumn("issue",               width="medium"),
                 "Recommended Action":   st.column_config.TextColumn("Recommended Action",  width="large"),
-                "Taxonomy Category":    st.column_config.TextColumn("Category",            width="medium"),
-                "Taxonomy Subcategory": st.column_config.TextColumn("Subcategory",         width="medium"),
-                "Taxonomy Issue":       st.column_config.TextColumn("Issue",               width="medium"),
-                "Sentiment":            st.column_config.TextColumn("Sentiment",           width="small"),
-                "Score":                st.column_config.NumberColumn("Score", min_value=0, max_value=10, format="%d", width="small"),
-                "Message Type":         st.column_config.TextColumn("Message Type",        width="small"),
                 "Classification":       st.column_config.TextColumn("Classification",      width="small"),
                 "Confidence":           st.column_config.TextColumn("Confidence",          width="small"),
                 "Language":             st.column_config.TextColumn("Lang",                width="small"),
@@ -785,7 +1031,7 @@ def render_results(job: dict) -> None:
 
     st.divider()
     if st.button("🔄  Start New Analysis", use_container_width=True):
-        for k in ["job_result", "overlay_cat_idx", "overlay_trigger", "_overlay_data"]:
+        for k in ["job_result", "overlay_cat_idx", "overlay_trigger", "_overlay_data", "_user_edits"]:
             st.session_state.pop(k, None)
         st.rerun()
 
@@ -814,10 +1060,7 @@ if "job_id" in st.session_state:
         done  = job.get("progress", 0)
         if phase == 1:
             pct  = done / total if total else 0
-            text = f"Phase 1 — Translating & classifying: batch {done} / {total}"
-        elif str(phase) == "1.5":
-            pct  = 1.0
-            text = "Phase 1.5 — Mapping complaints to taxonomy categories…"
+            text = f"Phase 1 — Translating, classifying & mapping taxonomy: batch {done} / {total}"
         else:
             pct  = 1.0
             text = "Phase 2 — Running root cause analysis on full dataset…"
